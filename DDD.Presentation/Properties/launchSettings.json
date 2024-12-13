@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DDD.Presentation": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

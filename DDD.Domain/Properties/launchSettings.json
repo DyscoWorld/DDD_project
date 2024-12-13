@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DDD.Domain": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
