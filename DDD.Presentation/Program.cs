@@ -1,10 +1,9 @@
-﻿namespace DDD.Presentation
+﻿namespace DDD.Presentation;
+
+public class Program
 {
-    internal class Program
+    public static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Hello, World!");
-        }
+        Console.WriteLine("Hello, World!");
     }
 }
