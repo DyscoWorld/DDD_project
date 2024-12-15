@@ -1,9 +1,12 @@
-﻿namespace DDD.Presentation;
+﻿using DDD.Presentation.TelegramBotIntegration;
 
-public class Program
+namespace DDD.Presentation
 {
-    public static void Main(string[] args)
+    class Program
     {
-        Console.WriteLine("Hello, World!");
+        static void Main(string[] args)
+        {
+            BotInitializer.StartBot();
+        }
     }
 }
