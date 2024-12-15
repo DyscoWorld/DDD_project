@@ -13,10 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DomainEvents\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\DDD.Infrastructure\DDD.Infrastructure.csproj" />
     <ProjectReference Include="..\DDD.Models\DDD.Models.csproj" />
   </ItemGroup>
