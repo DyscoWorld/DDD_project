@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace DDD.Domain.DomainEvents
 {
-    public class LearnWord
+    // Слово изучено
+    public class LearnWord : IDomainEvent
     {
+        public void Handle()
+        {
+            // Пустая реализация
+        }
     }
 }

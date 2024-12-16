@@ -6,7 +6,22 @@ using System.Threading.Tasks;
 
 namespace DDD.Domain.DomainEvents
 {
+    // Диспетчер событий
     public class DomainEventDispatcher
     {
+        private readonly IEnumerable<IDomainEvent> _events;
+
+        public DomainEventDispatcher(IEnumerable<IDomainEvent> events)
+        {
+            _events = events.ToList();
+        }
+
+        public void DispatchEvents()
+        {
+            foreach (var domainEvent in _events)
+            {
+                domainEvent.Handle();
+            }
+        }
     }
 }

@@ -8,5 +8,6 @@ namespace DDD.Domain.DomainEvents
 {
     public interface IDomainEvent
     {
+        void Handle();
     }
 }
