@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace DDD.Domain.DomainEvents
 {
-    public class AddExternalWords
+    // Добавление внешних слов
+    public class AddExternalWords : IDomainEvent
     {
+        public void Handle()
+        {
+            // Пустая реализация
+        }
     }
 }
