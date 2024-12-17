@@ -18,16 +18,18 @@ namespace DDD.Presentation.TelegramBotIntegration
             _botClient = new TelegramBotClient(BotConfiguration.GetApiKey());
             _cancellationTokenSource = new CancellationTokenSource();
         }
-        
+
         /// <summary>
-        /// Запуск бота
+        /// Асинхронный запуск бота
         /// </summary>
-        public static void StartBot()
+        public static async Task StartBotAsync()
         {
             var receiverOptions = new ReceiverOptions
             {
                 AllowedUpdates = [UpdateType.Message]
             };
+
+            Console.WriteLine("Бот запущен.");
 
             _botClient.StartReceiving(
                 UpdateHandler.HandleUpdateMessageAsync,
@@ -36,9 +38,8 @@ namespace DDD.Presentation.TelegramBotIntegration
                 cancellationToken: _cancellationTokenSource.Token
             );
 
-            Console.WriteLine("Бот запущен. Нажмите любую клавишу для завершения.");
-            Console.ReadKey();
-            StopBot();
+            // Запуск бота в фоновом режиме
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -46,6 +47,7 @@ namespace DDD.Presentation.TelegramBotIntegration
         /// </summary>
         public static void StopBot()
         {
+            Console.WriteLine("Бот останавливается...");
             _cancellationTokenSource.Cancel();
         }
     }
