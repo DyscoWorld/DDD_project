@@ -21,5 +21,7 @@ namespace DDD.Models.Data
 
         public IMongoCollection<User> Users => _database.GetCollection<User>("Users");
         public IMongoCollection<Word> Words => _database.GetCollection<Word>("Words");
+        public IMongoCollection<UserSettings> Settings 
+            => _database.GetCollection<UserSettings>("UserSettings");
     }
 }

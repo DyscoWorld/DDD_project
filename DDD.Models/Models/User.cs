@@ -10,7 +10,8 @@ namespace DDD.Models.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public string TelegramId { get; set; }
-        public string Username { get; set; }
-        public ICollection<Word> Words { get; set; }
+        public DateTime LastActivity { get; set; }
+        public ICollection<UserSettings> Settings { get; set; } = new List<UserSettings>();
+        public ICollection<string> WordIds { get; set; } = new List<string>();
     }
 }
