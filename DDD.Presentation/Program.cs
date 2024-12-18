@@ -1,25 +1,58 @@
 ﻿using DDD.Domain.DomainEvents;
+using DDD.Infrastructure;
+using DDD.Infrastructure.Repositories;
+using DDD.Infrastructure.Repositories.Interfaces;
 using DDD.Presentation.TelegramBotIntegration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
+using SchedulerService;
 
 namespace DDD.Presentation
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            var services = new ServiceCollection();
+            var host = Host.CreateDefaultBuilder(args)
+                .ConfigureServices((context, services) =>
+                {
+                    services.AddLogging(builder =>
+                    {
+                        builder.AddConsole();
+                        builder.SetMinimumLevel(LogLevel.Information);
+                    });
+                    
+                    services.AddSingleton<IMongoClient>(sp => new MongoClient("mongodb://admin:password@localhost:27017"));
+                    services.AddSingleton<ApplicationDbContextTemplate>();
+                    services.AddTransient<IUserTrainingRepositoryTemplate, UserTrainingRepository>();
+                    
+                    services.AddTransient<DomainEventDispatcher>();
+                    services.AddTransient<Service>();
+                    
+                    services.AddHostedService<Worker>();
+                })
+                .Build();
+            
+            await BotInitializer.StartBotAsync();
 
-            services.AddTransient<DomainEventDispatcher>();
+            Console.WriteLine("Для остановки приложения нажмите Ctrl+C");
 
-            services.AddTransient<Service>();
+            using (host)
+            {
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+                
+                Console.CancelKeyPress += (sender, eventArgs) =>
+                {
+                    eventArgs.Cancel = true;
+                    lifetime.StopApplication();
+                };
 
-            var serviceProvider = services.BuildServiceProvider();
-
-            BotInitializer.StartBot();
-
-            var someService = serviceProvider.GetRequiredService<Service>();
-            someService.DoSomething();
+                await host.RunAsync();
+            }
+            
+            BotInitializer.StopBot();
         }
     }
 }

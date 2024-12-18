@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DDD.Domain\DDD.Domain.csproj" />
+    <ProjectReference Include="..\SchedulerService\SchedulerService.csproj" />
   </ItemGroup>
 
 </Project>

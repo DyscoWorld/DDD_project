@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace DDD.Domain.DomainEvents
 {
     // Диспетчер событий
-    public class DomainEventDispatcher
+    public class DomainEventDispatcher : IDomainEventDispatcher
     {
         private readonly IEnumerable<IDomainEvent> _events;
 
