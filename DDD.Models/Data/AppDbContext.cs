@@ -14,10 +14,7 @@ namespace DDD.Models.Data
     {
         private readonly IMongoDatabase _database;
 
-        public AppDbContext(IMongoDatabase database)
-        {
-            _database = database;
-        }
+        public AppDbContext(IMongoDatabase database) => _database = database;
 
         public IMongoCollection<User> Users => _database.GetCollection<User>("Users");
         public IMongoCollection<Word> Words => _database.GetCollection<Word>("Words");

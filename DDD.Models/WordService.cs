@@ -9,9 +9,7 @@ namespace DDD.Models
         private readonly AppDbContext _context;
 
         public WordService(AppDbContext context)
-        {
-            _context = context;
-        }
+            => _context = context;
 
         public async Task AddWordAsync(string telegramId, string name, string translation, string definition, int rank, int timesRepeated, bool isLearned)
         {
@@ -41,13 +39,8 @@ namespace DDD.Models
         public async Task<List<Word>> GetWordsAsync(string telegramId)
         {
             var user = await _context.Users.Find(u => u.TelegramId == telegramId).FirstOrDefaultAsync();
-            if (user == null)
-            {
-                return new List<Word>();
-            }
-
-            var wordIds = user.WordIds;
-            var words = await _context.Words.Find(w => wordIds.Contains(w.Id)).ToListAsync();
+            if (user == null) return new List<Word>();
+            var words = await _context.Words.Find(w => user.WordIds.Contains(w.Id)).ToListAsync();
             return words;
         }
 
@@ -73,11 +66,7 @@ namespace DDD.Models
         public async Task<List<UserSettings>> GetUserSettingsAsync(string telegramId)
         {
             var user = await _context.Users.Find(u => u.TelegramId == telegramId).FirstOrDefaultAsync();
-            if (user == null)
-            {
-                return new List<UserSettings>();
-            }
-
+            if (user == null) return new List<UserSettings>();
             return user.Settings.ToList();
         }
     }

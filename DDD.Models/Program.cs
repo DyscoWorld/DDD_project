@@ -24,17 +24,13 @@ namespace DDD.Models
             await wordService.AddWordAsync("123456789", "world", "мир", "Планета Земля", 1, 0, false);
             var words = await wordService.GetWordsAsync("123456789");
             foreach (var word in words)
-            {
                 Console.WriteLine($"{word.Name} - {word.Translation}");
-            }
 
             // Пример использования сервиса для добавления настроек пользователя
             await wordService.AddUserSettingsAsync("123456789", "30 minutes", 10);
             var userSettings = await wordService.GetUserSettingsAsync("123456789");
             foreach (var setting in userSettings)
-            {
                 Console.WriteLine($"Time to spend: {setting.TimeToSpendMessages}, Word amount: {setting.WordAmount}");
-            }
         }
     }
 }
