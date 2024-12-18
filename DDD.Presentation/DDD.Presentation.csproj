@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="Telegram.Bot" Version="22.2.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,8 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DDD.Domain\DDD.Domain.csproj" />
-    <ProjectReference Include="..\DDD.Infrastructure\DDD.Infrastructure.csproj" />
-    <ProjectReference Include="..\DDD.Models\DDD.Models.csproj" />
+    <ProjectReference Include="..\SchedulerService\SchedulerService.csproj" />
   </ItemGroup>
 
 </Project>
