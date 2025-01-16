@@ -6,14 +6,18 @@ using System.Threading.Tasks;
 
 namespace DDD.Domain.DomainEvents
 {
-    // Диспетчер событий
     public class DomainEventDispatcher : IDomainEventDispatcher
     {
-        private readonly IEnumerable<IDomainEvent> _events;
+        private readonly List<IDomainEvent> _events;
 
-        public DomainEventDispatcher(IEnumerable<IDomainEvent> events)
+        public DomainEventDispatcher()
         {
-            _events = events.ToList();
+            _events = new List<IDomainEvent>();
+        }
+
+        public void AddEvent(IDomainEvent domainEvent)
+        {
+            _events.Add(domainEvent);
         }
 
         public void DispatchEvents()
@@ -22,6 +26,8 @@ namespace DDD.Domain.DomainEvents
             {
                 domainEvent.Handle();
             }
+
+            _events.Clear();
         }
     }
 }

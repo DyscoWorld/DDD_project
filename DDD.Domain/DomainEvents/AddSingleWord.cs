@@ -1,17 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DDD.Infrastructure.Data;
+using MongoDB.Driver;
 
 namespace DDD.Domain.DomainEvents
 {
-    // Добавление слова
     public class AddSingleWord : IDomainEvent
     {
+        public required string Word { get; set; }
+
+        private readonly IMongoCollection<WordEntity> _wordsCollection;
+
+        public AddSingleWord(IMongoCollection<WordEntity> wordsCollection)
+        {
+            _wordsCollection = wordsCollection;
+        }
+
         public void Handle()
         {
-            // Пустая реализация
+            var wordEntity = new WordEntity { Text = this.Word };
+            _wordsCollection.InsertOne(wordEntity);
         }
     }
 }
