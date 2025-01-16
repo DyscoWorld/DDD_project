@@ -1,7 +1,9 @@
 ﻿using DDD.Domain.DomainEvents;
+using DDD.Domain.Services;
 using DDD.Infrastructure;
 using DDD.Infrastructure.Repositories;
 using DDD.Infrastructure.Repositories.Interfaces;
+using DDD.Presentation.Handlers;
 using DDD.Presentation.TelegramBotIntegration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,41 +20,59 @@ namespace DDD.Presentation
             var host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices((context, services) =>
                 {
+                    // Логирование
                     services.AddLogging(builder =>
                     {
                         builder.AddConsole();
                         builder.SetMinimumLevel(LogLevel.Information);
                     });
-                    
-                    services.AddSingleton<IMongoClient>(sp => new MongoClient("mongodb://admin:password@localhost:27017"));
-                    services.AddSingleton<ApplicationDbContextTemplate>();
-                    services.AddTransient<IUserTrainingRepositoryTemplate, UserTrainingRepository>();
-                    
+
+                    // Бд
+                    services.AddSingleton<IMongoClient>(_ =>
+                        new MongoClient("mongodb://admin:password@localhost:27017"));
+                    services.AddSingleton<IMongoDatabase>(sp =>
+                    {
+                        var client = sp.GetRequiredService<IMongoClient>();
+                        return client.GetDatabase("EnglishDB");
+                    });
+                    services.AddSingleton<AppDbContext>();
+
+                    // Репозитории
+                    services.AddScoped<IGlobalWordRepository, GlobalWordRepository>();
+                    services.AddScoped<IUserRepository, UserRepository>();
+
+                    // События и сервисы доменной логики
                     services.AddTransient<DomainEventDispatcher>();
                     services.AddTransient<Service>();
+
+                    // Сервисы
+                    services.AddScoped<GlobalWordService>();
+                    services.AddScoped<UserWordService>();
+
+                    // Telegram Bot
+                    services.AddScoped<UpdateHandler>();
+                    services.AddSingleton<BotInitializer>();
                     
                     services.AddHostedService<Worker>();
                 })
                 .Build();
             
-            await BotInitializer.StartBotAsync();
+            var botInitializer = host.Services.GetRequiredService<BotInitializer>();
+            await botInitializer.StartBotAsync();
 
             Console.WriteLine("Для остановки приложения нажмите Ctrl+C");
 
-            using (host)
+            // Обработка Ctrl+C для корректного завершения приложения
+            Console.CancelKeyPress += (sender, eventArgs) =>
             {
-                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
-                
-                Console.CancelKeyPress += (sender, eventArgs) =>
-                {
-                    eventArgs.Cancel = true;
-                    lifetime.StopApplication();
-                };
+                eventArgs.Cancel = true;
+                botInitializer.StopBot();
+                host.Services.GetRequiredService<IHostApplicationLifetime>().StopApplication();
+            };
 
-                await host.RunAsync();
-            }
-            
-            BotInitializer.StopBot();
+            // Запуск хоста
+            await host.RunAsync();
         }
     }
 }
+
