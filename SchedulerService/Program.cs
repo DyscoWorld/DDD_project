@@ -14,8 +14,8 @@ var host = Host.CreateDefaultBuilder(args)
         });
         
         services.AddSingleton<IMongoClient>(sp => new MongoClient("mongodb://admin:password@localhost:27017"));
-        services.AddSingleton<ApplicationDbContextTemplate>();
-        services.AddTransient<IUserTrainingRepositoryTemplate, UserTrainingRepository>();
+        services.AddSingleton<AppDbContext>();
+        services.AddTransient<IUserRepository, UserRepository>();
         services.AddHostedService<Worker>();
     })
     .Build();
