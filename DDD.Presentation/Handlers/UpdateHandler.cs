@@ -2,11 +2,7 @@
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using DDD.Infrastructure.Repositories.Interfaces;
-using DDD.Models.Models;
-using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
-using ILogger = DnsClient.Internal.ILogger;
-using User = DDD.Models.Models.User;
 
 namespace DDD.Presentation.Handlers
 {
@@ -15,12 +11,12 @@ namespace DDD.Presentation.Handlers
     /// </summary>
     public class UpdateHandler
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IBotCommandService _botCommandService;
         private readonly ILogger<UpdateHandler> _logger;
 
-        public UpdateHandler(IUserRepository userRepository, ILogger<UpdateHandler> logger)
+        public UpdateHandler(IBotCommandService botCommandService, ILogger<UpdateHandler> logger)
         {
-            _userRepository = userRepository;
+            _botCommandService = botCommandService;
             _logger = logger;
         }
 
@@ -32,68 +28,32 @@ namespace DDD.Presentation.Handlers
             if (update.Type == UpdateType.Message && update.Message is not null)
             {
                 var message = update.Message;
+                var chatId = message.Chat.Id.ToString();
+                var text = message.Text?.ToLower();
 
-                Console.WriteLine($"Получено сообщение от {message.Chat.Id}: {message.Text}");
+                _logger.LogInformation($"Получено сообщение от {chatId}: {text}");
 
-                if (message.Text is not null)
+                string response;
+
+                if (text != null && text.StartsWith("/addword"))
                 {
-                    string response;
-
-                    switch (message.Text.ToLower())
-                    {
-                        case "/start":
-                            response = await HandleStartCommandAsync(message.Chat.Id.ToString());
-                            break;
-
-                        case "/help":
-                            response = "Вот список доступных команд:\n/start - запуск\n/help - помощь";
-                            break;
-
-                        default:
-                            response = "Извините, я не понимаю эту команду.";
-                            break;
-                    }
-
-                    await botClient.SendTextMessageAsync(
-                        chatId: message.Chat.Id,
-                        text: response,
-                        cancellationToken: cancellationToken
-                    );
+                    response = await _botCommandService.HandleAddWordCommandAsync(chatId, text);
                 }
-            }
-        }
-
-        /// <summary>
-        /// Обработка команды /start
-        /// </summary>
-        private async Task<string> HandleStartCommandAsync(string telegramId)
-        {
-            await CreateUserIfNotExistsAsync(telegramId);
-            return "Привет! Я ваш бот. Чем могу помочь?";
-        }
-
-        /// <summary>
-        /// Создание пользователя, если его нет в базе
-        /// </summary>
-        private async Task CreateUserIfNotExistsAsync(string telegramId)
-        {
-            // Проверяем, существует ли пользователь
-            var user = await _userRepository.GetByTelegramIdAsync(telegramId);
-            if (user == null)
-            {
-                // Создаём нового пользователя
-                user = new User
+                else
                 {
-                    TelegramId = telegramId,
-                    LastActivity = DateTime.UtcNow
-                };
+                    response = text switch
+                    {
+                        "/start" => await _botCommandService.HandleStartCommandAsync(chatId),
+                        "/help" => await _botCommandService.HandleHelpCommandAsync(),
+                        _ => await _botCommandService.HandleUnknownCommandAsync()
+                    };
+                }
 
-                await _userRepository.AddAsync(user);
-                _logger.LogInformation($"Создан новый пользователь с TelegramId: {telegramId}");
-            }
-            else
-            {
-                _logger.LogInformation($"Пользователь с TelegramId: {telegramId} уже существует.");
+                await botClient.SendTextMessageAsync(
+                    chatId: message.Chat.Id,
+                    text: response,
+                    cancellationToken: cancellationToken
+                );
             }
         }
 
@@ -102,7 +62,7 @@ namespace DDD.Presentation.Handlers
         /// </summary>
         public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Произошла ошибка: {exception.Message}");
+            _logger.LogError(exception, "Произошла ошибка");
             return Task.CompletedTask;
         }
     }

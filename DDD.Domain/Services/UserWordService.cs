@@ -6,7 +6,7 @@ namespace DDD.Domain.Services;
 /// <summary>
 /// Сервис для взаимодействия с пользовательскими словами 
 /// </summary>
-public class UserWordService
+public class UserWordService : IUserWordService
 {
     private readonly IUserRepository _userRepository;
 

@@ -48,6 +48,7 @@ namespace DDD.Presentation
                     // Сервисы
                     services.AddScoped<GlobalWordService>();
                     services.AddScoped<UserWordService>();
+                    services.AddScoped<IBotCommandService, BotCommandService>();
 
                     // Telegram Bot
                     services.AddScoped<UpdateHandler>();

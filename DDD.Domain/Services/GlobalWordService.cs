@@ -6,7 +6,7 @@ namespace DDD.Domain.Services;
 /// <summary>
 /// Сервис для взаимодействия с общим пулом
 /// </summary>
-public class GlobalWordService
+public class GlobalWordService : IGlobalWordService
 {
     private readonly IGlobalWordRepository _globalWordRepository;
 
