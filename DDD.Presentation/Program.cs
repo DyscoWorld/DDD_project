@@ -38,15 +38,9 @@ namespace DDD.Presentation
                     services.AddSingleton<AppDbContext>();
 
                     // Репозитории
-                    services.AddScoped<IGlobalWordRepository, GlobalWordRepository>();
                     services.AddScoped<IUserRepository, UserRepository>();
 
-                    // События и сервисы доменной логики
-                    services.AddTransient<DomainEventDispatcher>();
-                    services.AddTransient<Service>();
-
                     // Сервисы
-                    services.AddScoped<GlobalWordService>();
                     services.AddScoped<UserWordService>();
                     services.AddScoped<IBotCommandService, BotCommandService>();
 
@@ -55,6 +49,11 @@ namespace DDD.Presentation
                     services.AddSingleton<BotInitializer>();
                     
                     services.AddHostedService<Worker>();
+
+                    services.AddTransient<AddSingleWord>();
+                    services.AddTransient<TrainingEvent>();
+
+                    services.AddSingleton<TrainingHandler>();
                 })
                 .Build();
             

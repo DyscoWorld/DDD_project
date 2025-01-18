@@ -1,10 +1,7 @@
 ﻿using DDD.Infrastructure.Repositories.Interfaces;
 using DDD.Models.Dtos;
 
-using Humanizer;
-
 using Telegram.Bot;
-using Telegram.Bot.Types;
 
 namespace DDD.Presentation.Handlers;
 
