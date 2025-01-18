@@ -2,7 +2,7 @@ using DDD.Infrastructure;
 using DDD.Infrastructure.Repositories;
 using DDD.Infrastructure.Repositories.Interfaces;
 using MongoDB.Driver;
-using SchedulerService;
+//using SchedulerService;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
@@ -16,7 +16,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IMongoClient>(sp => new MongoClient("mongodb://admin:password@localhost:27017"));
         services.AddSingleton<AppDbContext>();
         services.AddTransient<IUserRepository, UserRepository>();
-        services.AddHostedService<Worker>();
+        //services.AddHostedService<Worker>();
     })
     .Build();
 

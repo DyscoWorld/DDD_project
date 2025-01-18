@@ -1,4 +1,5 @@
-﻿using DDD.Infrastructure.Repositories.Interfaces;
+﻿using DDD.Domain.DomainEvents;
+using DDD.Infrastructure.Repositories.Interfaces;
 using DDD.Models.Models;
 using Microsoft.Extensions.Logging;
 
@@ -8,11 +9,13 @@ namespace DDD.Domain.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly ILogger<BotCommandService> _logger;
+        private readonly AddSingleWord _addSingleWord;
 
-        public BotCommandService(IUserRepository userRepository, ILogger<BotCommandService> logger)
+        public BotCommandService(IUserRepository userRepository, ILogger<BotCommandService> logger, AddSingleWord addSingleWord)
         {
             _userRepository = userRepository;
             _logger = logger;   
+            _addSingleWord = addSingleWord;
         }
 
         public async Task<string> HandleStartCommandAsync(string telegramId)
@@ -60,23 +63,11 @@ namespace DDD.Domain.Services
             if (user is null)
             {
                 await HandleStartCommandAsync(telegramId);
+                user = await _userRepository.GetByTelegramIdAsync(telegramId);
             }
             
-            user = await _userRepository.GetByTelegramIdAsync(telegramId);
-
-            // Добавляем слово в список пользователя
-            var newWord = new Word
-            {
-                Name = word,
-                Translation = translation,
-                Definition = definition,
-                Rank = rank,
-                IsLearned = false
-            };
-
-            user.PersonalWords.Add(newWord);
-            await _userRepository.UpdateAsync(user);
-
+            await _addSingleWord.Handle(new(user.TelegramId, word, translation, definition)); 
+           
             _logger.LogInformation($"Добавлено слово '{word}' пользователю {telegramId}");
             return $"Слово '{word}' успешно добавлено!";
         }

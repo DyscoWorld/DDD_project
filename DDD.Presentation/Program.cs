@@ -38,23 +38,22 @@ namespace DDD.Presentation
                     services.AddSingleton<AppDbContext>();
 
                     // Репозитории
-                    services.AddScoped<IGlobalWordRepository, GlobalWordRepository>();
                     services.AddScoped<IUserRepository, UserRepository>();
 
-                    // События и сервисы доменной логики
-                    services.AddTransient<DomainEventDispatcher>();
-                    services.AddTransient<Service>();
-
                     // Сервисы
-                    services.AddScoped<GlobalWordService>();
                     services.AddScoped<UserWordService>();
                     services.AddScoped<IBotCommandService, BotCommandService>();
 
                     // Telegram Bot
+                    services.AddSingleton<GetTelegramBotClientService>();
                     services.AddScoped<UpdateHandler>();
+                    services.AddSingleton<TrainingHandler>();
                     services.AddSingleton<BotInitializer>();
                     
                     services.AddHostedService<Worker>();
+
+                    services.AddTransient<AddSingleWord>();
+                    services.AddTransient<TrainingEvent>();
                 })
                 .Build();
             

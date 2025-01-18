@@ -22,10 +22,15 @@ public interface IUserRepository
     /// </summary>
     Task UpdateAsync(User user);
 
-    /// <summary>
-    /// Возвращает список пользователей, у которых имеется хотя бы одна запланированная тренировка.
-    /// </summary>
-    Task<List<User>> GetScheduledTrainingsAsync();
+    Task AddPersonalWord(string telegramId, Word word);
+    
+    Task<List<Word>> GetAllPersonalWords(string telegramId);
+
+    Task<Settings> GetSettings(string telegramId);
+
+    Task<List<User>> GetAllUsers();
+
+    Task IncreaseUserWordRank(string telegramId, string wordName);
 }
 
 

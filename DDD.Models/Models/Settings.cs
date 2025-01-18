@@ -6,16 +6,16 @@ namespace DDD.Models.Models
     /// <summary>
     /// Тренировка
     /// </summary>
-    public class Training
+    public class Settings
     {
         /// <summary>
         /// Время для оповещения
         /// </summary>
-        public string TimeToSpendMessages { get; set; }
-        
+        public TimeOnly TimeToSpendMessages { get; set; } = new TimeOnly(12, 0, 0);
+
         /// <summary>
         /// Кол-во слов в тренировке
         /// </summary>
-        public int WordAmount { get; set; }
+        public int WordAmount { get; set; } = 5;
     }
 }

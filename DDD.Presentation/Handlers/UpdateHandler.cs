@@ -4,35 +4,39 @@ using Telegram.Bot.Types.Enums;
 using DDD.Infrastructure.Repositories.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace DDD.Presentation.Handlers
+namespace DDD.Presentation.Handlers;
+
+/// <summary>
+/// Класс handler для сообщений
+/// </summary>
+public class UpdateHandler
 {
-    /// <summary>
-    /// Класс handler для сообщений
-    /// </summary>
-    public class UpdateHandler
+    private readonly IBotCommandService _botCommandService;
+    private readonly ILogger<UpdateHandler> _logger;
+    private readonly TrainingHandler _trainingHandler;
+
+    public UpdateHandler(IBotCommandService botCommandService, ILogger<UpdateHandler> logger, TrainingHandler trainingHandler)
     {
-        private readonly IBotCommandService _botCommandService;
-        private readonly ILogger<UpdateHandler> _logger;
+        _botCommandService = botCommandService;
+        _logger = logger;
+        _trainingHandler = trainingHandler;
+    }
 
-        public UpdateHandler(IBotCommandService botCommandService, ILogger<UpdateHandler> logger)
+    /// <summary>
+    /// Обработка входящих сообщений
+    /// </summary>
+    public async Task HandleUpdateMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    {
+        if (update.Type == UpdateType.Message && update.Message is not null)
         {
-            _botCommandService = botCommandService;
-            _logger = logger;
-        }
+            var message = update.Message;
+            var chatId = message.Chat.Id.ToString();
+            var text = message.Text?.ToLower();
 
-        /// <summary>
-        /// Обработка входящих сообщений
-        /// </summary>
-        public async Task HandleUpdateMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            if (update.Type == UpdateType.Message && update.Message is not null)
+            _logger.LogInformation($"Получено сообщение от {chatId}: {text}");
+
+            if (IsCommand(text))
             {
-                var message = update.Message;
-                var chatId = message.Chat.Id.ToString();
-                var text = message.Text?.ToLower();
-
-                _logger.LogInformation($"Получено сообщение от {chatId}: {text}");
-
                 string response;
 
                 if (text != null && text.StartsWith("/addword"))
@@ -49,21 +53,34 @@ namespace DDD.Presentation.Handlers
                     };
                 }
 
-                await botClient.SendTextMessageAsync(
+                await botClient.SendMessage(
                     chatId: message.Chat.Id,
                     text: response,
                     cancellationToken: cancellationToken
                 );
             }
+            else
+            {
+                if (_trainingHandler.IsUserOnTraining(telegramId: chatId))
+                    _trainingHandler.ContunueTraining(chatId, text);
+                else
+                    await botClient.SendMessage(
+                    chatId: message.Chat.Id,
+                    text: "Вы не на тренировке, введите команду",
+                    cancellationToken: cancellationToken
+                );
+            }
         }
+    }
 
-        /// <summary>
-        /// Обработка ошибок
-        /// </summary>
-        public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
-        {
-            _logger.LogError(exception, "Произошла ошибка");
-            return Task.CompletedTask;
-        }
+    private static bool IsCommand(string message) => message is not null && message.StartsWith('/');
+
+    /// <summary>
+    /// Обработка ошибок
+    /// </summary>
+    public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+    {
+        _logger.LogError(exception, "Произошла ошибка");
+        return Task.CompletedTask;
     }
 }
