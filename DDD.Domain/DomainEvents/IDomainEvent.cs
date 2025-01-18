@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DDD.Models.Dtos;
 
-namespace DDD.Domain.DomainEvents
+namespace DDD.Domain.DomainEvents;
+
+public interface IDomainEvent<TRequest, TResponse>
+    where TRequest : BaseDto
 {
-    public interface IDomainEvent
-    {
-        void Handle();
-    }
+    public Task<TResponse> Handle(TRequest dto);
 }

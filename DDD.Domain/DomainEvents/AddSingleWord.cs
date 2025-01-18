@@ -1,17 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DDD.Infrastructure.Repositories;
+using DDD.Infrastructure.Repositories.Interfaces;
+using DDD.Models.Dtos;
+using DDD.Models.Models;
 
-namespace DDD.Domain.DomainEvents
+namespace DDD.Domain.DomainEvents;
+
+// Добавление слова
+public class AddSingleWord(IUserRepository userRepository) : IDomainEvent<AddSingleWordDto, int>
 {
-    // Добавление слова
-    public class AddSingleWord : IDomainEvent
+    public async Task<int> Handle(AddSingleWordDto dto)
     {
-        public void Handle()
+        var word = new Word()
         {
-            // Пустая реализация
-        }
+            Name = dto.Name,
+            Definition = dto.Definition,
+            Translation = dto.Translation,
+            Rank = 0,
+            IsLearned = false
+        };
+
+        await userRepository.AddPersonalWord(dto.TelegramId, word);
+
+        return 0;
     }
 }

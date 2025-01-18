@@ -1,65 +1,51 @@
-using DDD.Infrastructure.Repositories.Interfaces;
-using DDD.Models.Models;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Linq;
+using DDD.Domain.DomainEvents;
+using DDD.Infrastructure.Repositories;
+using DDD.Models.Dtos;
 
-namespace SchedulerService
+namespace SchedulerService;
+
+public class Worker(ILogger<Worker> logger, UserRepository userRepository, TrainingEvent trainingEvent) : BackgroundService
 {
-    public class Worker : BackgroundService
+    private AllUserSettingsDto AllUserSettings { get; set; }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        private readonly ILogger<Worker> _logger;
-        private readonly IUserRepository _userRepository;
+        var users = await userRepository.GetAllUsers();
 
-        public Worker(ILogger<Worker> logger, IUserRepository userRepository)
+        var mappedUsers = new List<TelegramIdAndSettingsDto>();
+        foreach (var user in users)
+            mappedUsers.Add(await GetDtoForUser(user.TelegramId));
+
+        AllUserSettings = new AllUserSettingsDto(mappedUsers);
+
+        logger.LogInformation("SchedulerService запущен.");
+
+        while (!stoppingToken.IsCancellationRequested)
         {
-            _logger = logger;
-            _userRepository = userRepository;
-        }
+            var currentTime = DateTime.UtcNow;
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            _logger.LogInformation("SchedulerService запущен.");
-
-            while (!stoppingToken.IsCancellationRequested)
+            foreach (var settings in AllUserSettings.IdAndSettingsDtos)
             {
-                var now = DateTime.Now;
+                var timeToTrain = settings.Settings.TimeToSpendMessages;
 
-                // Получаем список пользователей с запланированными тренировками.
-                // Метод должен быть реализован так, чтобы возвращать пользователей, у которых есть тренировки.
-                var usersWithTrainings = await _userRepository.GetScheduledTrainingsAsync();
-
-                foreach (var user in usersWithTrainings)
-                {
-                    foreach (var training in user.Trainings)
-                    {
-                        if (DateTime.TryParse(training.TimeToSpendMessages, out DateTime scheduledTime))
-                        {
-                            if (now >= scheduledTime)
-                            {
-                                _logger.LogInformation($"Выполняем обучение для пользователя {user.TelegramId} в {now}");
-
-
-                                DoScheduledAction(user.TelegramId);
-                            }
-                        }
-                        else
-                        {
-                            _logger.LogWarning($"Не удалось распарсить время для тренировки пользователя {user.TelegramId}: {training.TimeToSpendMessages}");
-                        }
-                    }
-                }
-                
-                await Task.Delay(1000, stoppingToken);
+                if (timeToTrain.Hour == currentTime.Hour && timeToTrain.Minute == currentTime.Minute)
+                    await TrainUser(settings.TelegramId);
             }
-        }
-
-        private void DoScheduledAction(string telegramId)
-        {
-            _logger.LogInformation($"Запланированное действие выполнено для пользователя {telegramId}!");
+            
+            await Task.Delay(60001, stoppingToken);
         }
     }
+
+    private async Task TrainUser(string telegramId)
+    {
+        var trainingWords =await trainingEvent.Handle(new(telegramId));
+        
+
+    }
+
+    private async Task<TelegramIdAndSettingsDto> GetDtoForUser(string telegramId) => 
+        new TelegramIdAndSettingsDto(
+            telegramId,
+            await userRepository.GetSettings(telegramId)
+        );
 }

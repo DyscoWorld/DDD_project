@@ -28,7 +28,7 @@ namespace DDD.Models.Models
         /// <summary>
         /// Запланированные тренировки
         /// </summary>
-        public ICollection<Training> Trainings { get; set; } = new List<Training>();
+        public Settings Settings { get; set; } = new Settings();
         
         /// <summary>
         /// Слова пользователя

@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace DDD.Domain.DomainEvents;
 
-namespace DDD.Domain.DomainEvents
+// Добавление внешних слов
+public class AddExternalWords : IDomainEvent
 {
-    // Добавление внешних слов
-    public class AddExternalWords : IDomainEvent
+    public void Handle()
     {
-        public void Handle()
-        {
-            // Пустая реализация
-        }
+        // Пустая реализация
     }
 }
