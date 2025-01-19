@@ -1,64 +1,54 @@
 ﻿using DDD.Infrastructure.Repositories.Interfaces;
 using DDD.Models.Dtos;
+using DDD.Presentation.TelegramBotIntegration;
 
 using Telegram.Bot;
 
 namespace DDD.Presentation.Handlers;
 
-public class TrainingHandler(ITelegramBotClient botClient, IUserRepository userRepository)
+public class TrainingHandler(IUserRepository userRepository)
 {
-    private List<UserOnTrainingDto> TraininingUsers { get; set; } = [];
+    private static Dictionary<string, UserOnTrainingDto> TraininingUsersByTelegramIds { get; set; } = [];
+    private static ITelegramBotClient TelegramBotClient { get; set; } = TelegramBotClientSingleton.TelegramBotClient!;
 
     public async Task TrainUser(GetTrainingWordsResponseDto dto)
     {
-        TraininingUsers.Add(new(dto.TelegramId, Models.Enums.TrainingStatusEnum.Training, ""));
+        TraininingUsersByTelegramIds.Add(dto.TelegramId, new(dto.TelegramId, Models.Enums.TrainingStatusEnum.Training, ""));
 
         foreach (var word in dto.TrainingWords)
             await TrainOneWord(dto.TelegramId, word);
 
-        TraininingUsers.Remove(GetUserOnTrainingByTelegramId(dto.TelegramId));
+        TraininingUsersByTelegramIds.Remove(dto.TelegramId);
     }
 
     public async Task TrainOneWord(string telegramId, TrainingWordDto dto)
     {
-        var trainingUser = GetUserOnTrainingByTelegramId(telegramId);
-
         var translation = dto.Translation;
 
         var requestToTrain = $"Введите на английском: {translation}";
-        await botClient.SendMessage(
+        await TelegramBotClient.SendMessage(
             chatId: telegramId,
             text: requestToTrain
         );
 
-        while ( trainingUser.TrainingStatus is not Models.Enums.TrainingStatusEnum.EnteredWord )
+        while (TraininingUsersByTelegramIds[telegramId].TrainingStatus is not Models.Enums.TrainingStatusEnum.EnteredWord )
             await Task.Delay(100);
 
-        trainingUser = GetUserOnTrainingByTelegramId(telegramId);
-
-        var textToSend = trainingUser.LastEnteredWord == dto.Name
+        var textToSend = TraininingUsersByTelegramIds[telegramId].LastEnteredWord == dto.Name
             ? $"Вы правильно перевели слово"
             : $"Неправильно";
 
         await userRepository.IncreaseUserWordRank(telegramId, dto.Name);
 
-        await botClient.SendMessage(
+        await TelegramBotClient.SendMessage(
             chatId: telegramId,
             text: textToSend
         );
     }
 
-    private UserOnTrainingDto GetUserOnTrainingByTelegramId(string telegramId)
+    public static void ContunueTraining(string telegramId, string enteredWord)
     {
-        return TraininingUsers.Find(x => x.TelegramId == telegramId)!;
-    } 
-
-    public void ContunueTraining(string telegramId, string enteredWord)
-    {
-        var user = GetUserOnTrainingByTelegramId(telegramId);
-        var userIndex = TraininingUsers.IndexOf(user);
-
         var newUser = new UserOnTrainingDto(telegramId, Models.Enums.TrainingStatusEnum.EnteredWord, enteredWord);
-        TraininingUsers[userIndex] = newUser;
+        TraininingUsersByTelegramIds[telegramId] = newUser;
     }
 }

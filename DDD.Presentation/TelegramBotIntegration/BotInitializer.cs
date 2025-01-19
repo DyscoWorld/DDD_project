@@ -23,6 +23,8 @@ namespace DDD.Presentation.TelegramBotIntegration
             _botClient = new TelegramBotClient(BotConfiguration.GetApiKey());
             _updateHandler = updateHandler ?? throw new ArgumentNullException(nameof(updateHandler));
             _cancellationTokenSource = new CancellationTokenSource();
+
+            TelegramBotClientSingleton.TelegramBotClient = _botClient;
         }
 
         /// <summary>

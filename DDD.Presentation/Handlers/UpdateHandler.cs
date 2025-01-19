@@ -61,7 +61,7 @@ public class UpdateHandler
             }
             else
             {
-                _trainingHandler.ContunueTraining(chatId, text);
+                TrainingHandler.ContunueTraining(chatId, text);
             }
         }
     }

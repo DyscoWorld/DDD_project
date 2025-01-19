@@ -1,10 +1,17 @@
 using DDD.Domain.DomainEvents;
 using DDD.Infrastructure.Repositories;
+using DDD.Infrastructure.Repositories.Interfaces;
 using DDD.Models.Dtos;
+using DDD.Presentation.Handlers;
+
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+using Telegram.Bot;
 
 namespace SchedulerService;
 
-public class Worker(ILogger<Worker> logger, UserRepository userRepository, TrainingEvent trainingEvent) : BackgroundService
+public class Worker(ILogger<Worker> logger, IUserRepository userRepository, TrainingEvent trainingEvent, TrainingHandler trainingHandler) : BackgroundService
 {
     private AllUserSettingsDto AllUserSettings { get; set; }
 
@@ -22,7 +29,7 @@ public class Worker(ILogger<Worker> logger, UserRepository userRepository, Train
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var currentTime = DateTime.UtcNow;
+            var currentTime = DateTime.Now;
 
             foreach (var settings in AllUserSettings.IdAndSettingsDtos)
             {
@@ -32,15 +39,14 @@ public class Worker(ILogger<Worker> logger, UserRepository userRepository, Train
                     await TrainUser(settings.TelegramId);
             }
             
-            await Task.Delay(60001, stoppingToken);
+            await Task.Delay(100, stoppingToken);
         }
     }
 
     private async Task TrainUser(string telegramId)
     {
-        var trainingWords =await trainingEvent.Handle(new(telegramId));
-        
-
+        var trainingWords = await trainingEvent.Handle(new(telegramId));
+        await trainingHandler.TrainUser(trainingWords);
     }
 
     private async Task<TelegramIdAndSettingsDto> GetDtoForUser(string telegramId) => 

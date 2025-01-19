@@ -46,14 +46,13 @@ namespace DDD.Presentation
 
                     // Telegram Bot
                     services.AddScoped<UpdateHandler>();
+                    services.AddSingleton<TrainingHandler>();
                     services.AddSingleton<BotInitializer>();
                     
                     services.AddHostedService<Worker>();
 
                     services.AddTransient<AddSingleWord>();
                     services.AddTransient<TrainingEvent>();
-
-                    services.AddSingleton<TrainingHandler>();
                 })
                 .Build();
             
