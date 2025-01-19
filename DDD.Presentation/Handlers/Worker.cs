@@ -42,6 +42,8 @@ public class Worker(ILogger<Worker> logger, IUserRepository userRepository, Trai
                         await TrainUser(settings.TelegramId);
                         var index = AllUserSettings.IdAndSettingsDtos.IndexOf(settings);
                         AllUserSettings.IdAndSettingsDtos[index] = new TelegramIdAndSettingsDto(settings.TelegramId, true, settings.Settings);
+
+                        // break нужен, чтобы так, как мы меняем массив, то чтобы не вылетало на foreach
                         break;
                     }
                 }
