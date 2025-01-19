@@ -61,14 +61,19 @@ public class UpdateHandler
             }
             else
             {
-                _logger.LogInformation($"Вызываем продолжение");
-                _trainingHandler.ContunueTraining(chatId, text);
-                _logger.LogInformation($"Вызывали продолжение и оно сработало");
+                if (_trainingHandler.IsUserOnTraining(telegramId: chatId))
+                    _trainingHandler.ContunueTraining(chatId, text);
+                else
+                    await botClient.SendMessage(
+                    chatId: message.Chat.Id,
+                    text: "Вы не на тренировке, введите команду",
+                    cancellationToken: cancellationToken
+                );
             }
         }
     }
 
-    private bool IsCommand(string message) => message is not null && message.StartsWith('/');
+    private static bool IsCommand(string message) => message is not null && message.StartsWith('/');
 
     /// <summary>
     /// Обработка ошибок

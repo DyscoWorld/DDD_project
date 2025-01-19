@@ -17,28 +17,42 @@ public class TrainingHandler(ILogger<TrainingHandler> logger, IUserRepository us
 
     public async Task TrainUser(GetTrainingWordsResponseDto dto)
     {
-        logger.LogInformation(message: "Начало обработки юзера");
         TelegramBotClient = getTelegramBotClientService.TelegramBotClient;
-        TraininingUsersByTelegramIds.Add(dto.TelegramId, new(dto.TelegramId, Models.Enums.TrainingStatusEnum.Training, ""));
+
+        await TelegramBotClient.SendMessage(
+            chatId: dto.TelegramId,
+            text: "Начинаем тренировку"
+        );
+
+        if (!TraininingUsersByTelegramIds.ContainsKey(dto.TelegramId))
+            TraininingUsersByTelegramIds.Add(dto.TelegramId, new(dto.TelegramId, Models.Enums.TrainingStatusEnum.NotTraining, ""));
+
+        TraininingUsersByTelegramIds[dto.TelegramId] = new(dto.TelegramId, Models.Enums.TrainingStatusEnum.Training, "");
 
         foreach (var word in dto.TrainingWords)
             await TrainOneWord(dto.TelegramId, word);
 
-        TraininingUsersByTelegramIds.Remove(dto.TelegramId);
+        TraininingUsersByTelegramIds[dto.TelegramId] = new(dto.TelegramId, Models.Enums.TrainingStatusEnum.NotTraining, "");
+
+        await TelegramBotClient.SendMessage(
+            chatId: dto.TelegramId,
+            text: "Тренировка закончена"
+        );
     }
+
+    public bool IsUserOnTraining(string telegramId) 
+        => TraininingUsersByTelegramIds.ContainsKey(telegramId) 
+        && TraininingUsersByTelegramIds[telegramId].TrainingStatus != Models.Enums.TrainingStatusEnum.NotTraining;
 
     public async Task TrainOneWord(string telegramId, TrainingWordDto dto)
     {
         var translation = dto.Translation;
-        logger.LogInformation("Формируем первое слово запрос ы");
 
         var requestToTrain = $"Введите на английском: {translation}";
         await TelegramBotClient.SendMessage(
             chatId: telegramId,
             text: requestToTrain
         );
-
-        logger.LogInformation("Отправили просьбу");
 
         while (TraininingUsersByTelegramIds[telegramId].TrainingStatus is not Models.Enums.TrainingStatusEnum.EnteredWord )
         {
@@ -67,9 +81,7 @@ public class TrainingHandler(ILogger<TrainingHandler> logger, IUserRepository us
 
     public void ContunueTraining(string telegramId, string enteredWord)
     {
-        Console.WriteLine("Продолжаем тренировку 1");
         var newUser = new UserOnTrainingDto(telegramId, Models.Enums.TrainingStatusEnum.EnteredWord, enteredWord);
         TraininingUsersByTelegramIds[telegramId] = newUser;
-        Console.WriteLine("Продолжаем тренировку 2");
     }
 }

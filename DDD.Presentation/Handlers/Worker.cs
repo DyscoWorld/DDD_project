@@ -33,14 +33,17 @@ public class Worker(ILogger<Worker> logger, IUserRepository userRepository, Trai
 
             foreach (var settings in AllUserSettings.IdAndSettingsDtos)
             {
-                var timeToTrain = settings.Settings.TimeToSpendMessages;
-
-                if (timeToTrain.Hour == currentTime.Hour && timeToTrain.Minute == currentTime.Minute)
+                if (!settings.TrainedToday)
                 {
-                    await TrainUser(settings.TelegramId);
+                    var timeToTrain = settings.Settings.TimeToSpendMessages;
 
-                    // TODO: REMOVE LATER
-                    AllUserSettings.IdAndSettingsDtos.Clear();
+                    if (timeToTrain.Hour == currentTime.Hour && timeToTrain.Minute == currentTime.Minute)
+                    {
+                        await TrainUser(settings.TelegramId);
+                        var index = AllUserSettings.IdAndSettingsDtos.IndexOf(settings);
+                        AllUserSettings.IdAndSettingsDtos[index] = new TelegramIdAndSettingsDto(settings.TelegramId, true, settings.Settings);
+                        break;
+                    }
                 }
             }
             
@@ -57,6 +60,7 @@ public class Worker(ILogger<Worker> logger, IUserRepository userRepository, Trai
     private async Task<TelegramIdAndSettingsDto> GetDtoForUser(string telegramId) => 
         new TelegramIdAndSettingsDto(
             telegramId,
+            false,
             await userRepository.GetSettings(telegramId)
         );
 }

@@ -8,5 +8,6 @@ public record AllUserSettingsDto(
 
 public record TelegramIdAndSettingsDto(
     string TelegramId,
+    bool TrainedToday,
     Settings Settings
 ) : BaseDto;
