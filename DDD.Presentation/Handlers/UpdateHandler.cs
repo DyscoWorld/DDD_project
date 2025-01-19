@@ -61,7 +61,9 @@ public class UpdateHandler
             }
             else
             {
-                TrainingHandler.ContunueTraining(chatId, text);
+                _logger.LogInformation($"Вызываем продолжение");
+                _trainingHandler.ContunueTraining(chatId, text);
+                _logger.LogInformation($"Вызывали продолжение и оно сработало");
             }
         }
     }

@@ -36,7 +36,12 @@ public class Worker(ILogger<Worker> logger, IUserRepository userRepository, Trai
                 var timeToTrain = settings.Settings.TimeToSpendMessages;
 
                 if (timeToTrain.Hour == currentTime.Hour && timeToTrain.Minute == currentTime.Minute)
+                {
                     await TrainUser(settings.TelegramId);
+
+                    // TODO: REMOVE LATER
+                    AllUserSettings.IdAndSettingsDtos.Clear();
+                }
             }
             
             await Task.Delay(100, stoppingToken);

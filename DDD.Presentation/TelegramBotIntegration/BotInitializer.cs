@@ -18,13 +18,13 @@ namespace DDD.Presentation.TelegramBotIntegration
         /// Конструктор BotInitializer
         /// </summary>
         /// <param name="updateHandler">Экземпляр UpdateHandler для обработки сообщений</param>
-        public BotInitializer(UpdateHandler updateHandler)
+        public BotInitializer(UpdateHandler updateHandler, GetTelegramBotClientService getTelegramBotClientService)
         {
             _botClient = new TelegramBotClient(BotConfiguration.GetApiKey());
             _updateHandler = updateHandler ?? throw new ArgumentNullException(nameof(updateHandler));
             _cancellationTokenSource = new CancellationTokenSource();
 
-            TelegramBotClientSingleton.TelegramBotClient = _botClient;
+            getTelegramBotClientService.TelegramBotClient = _botClient;
         }
 
         /// <summary>

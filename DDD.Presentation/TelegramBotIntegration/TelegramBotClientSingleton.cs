@@ -2,7 +2,7 @@
 
 namespace DDD.Presentation.TelegramBotIntegration;
 
-public static class TelegramBotClientSingleton
+public class GetTelegramBotClientService
 {
-    public static ITelegramBotClient? TelegramBotClient { get; set; } = null;
+    public ITelegramBotClient TelegramBotClient { get; set; } = null!;
 }

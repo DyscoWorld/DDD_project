@@ -45,6 +45,7 @@ namespace DDD.Presentation
                     services.AddScoped<IBotCommandService, BotCommandService>();
 
                     // Telegram Bot
+                    services.AddSingleton<GetTelegramBotClientService>();
                     services.AddScoped<UpdateHandler>();
                     services.AddSingleton<TrainingHandler>();
                     services.AddSingleton<BotInitializer>();
