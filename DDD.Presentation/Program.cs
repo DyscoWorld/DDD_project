@@ -54,6 +54,9 @@ namespace DDD.Presentation
 
                     services.AddTransient<AddSingleWord>();
                     services.AddTransient<TrainingEvent>();
+                    services.AddTransient<ListWords>();
+                    services.AddTransient<LearnWord>();
+                    services.AddTransient<Settings>();
                 })
                 .Build();
             
