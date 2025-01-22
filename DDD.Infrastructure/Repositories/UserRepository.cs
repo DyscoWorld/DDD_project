@@ -69,6 +69,36 @@ public class UserRepository : IUserRepository
 
         await UpdateAsync(user);
     }
+
+    public async Task<bool> LearnWordAsync(string telegramId, string wordName, int maxRank)
+    {
+        var user = await GetByTelegramIdAsync(telegramId);
+        if (user == null) return false;
+
+        var word = user.PersonalWords.FirstOrDefault(w => w.Name == wordName);
+        if (word == null) return false;
+
+        if (word.Rank >= maxRank)
+        {
+            word.IsLearned = true;
+            await UpdateAsync(user);
+            return true;
+        }
+
+        return false;
+    }
+
+    public async Task<bool> UpdateUserSettingsAsync(string telegramId, TimeOnly timeToSpendMessages, int wordAmount)
+    {
+        var user = await GetByTelegramIdAsync(telegramId);
+        if (user == null) return false;
+
+        user.Settings.TimeToSpendMessages = timeToSpendMessages;
+        user.Settings.WordAmount = wordAmount;
+
+        await UpdateAsync(user);
+        return true;
+    }
 }
 
 

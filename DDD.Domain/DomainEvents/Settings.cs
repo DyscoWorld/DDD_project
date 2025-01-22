@@ -9,13 +9,6 @@ public class Settings(IUserRepository userRepository) : IDomainEvent<SettingsDto
 {
     public async Task<bool> Handle(SettingsDto dto)
     {
-        var user = await userRepository.GetByTelegramIdAsync(dto.TelegramId);
-        if (user == null) return false;
-
-        user.Settings.TimeToSpendMessages = dto.TimeToSpendMessages;
-        user.Settings.WordAmount = dto.WordAmount;
-
-        await userRepository.UpdateAsync(user);
-        return true;
+        return await userRepository.UpdateUserSettingsAsync(dto.TelegramId, dto.TimeToSpendMessages, dto.WordAmount);
     }
 }

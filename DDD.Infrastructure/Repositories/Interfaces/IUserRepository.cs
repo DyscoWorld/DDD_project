@@ -31,6 +31,11 @@ public interface IUserRepository
     Task<List<User>> GetAllUsers();
 
     Task IncreaseUserWordRank(string telegramId, string wordName);
+
+    Task<bool> LearnWordAsync(string telegramId, string wordName, int maxRank);
+
+    Task<bool> UpdateUserSettingsAsync(string telegramId, TimeOnly timeToSpendMessages, int wordAmount);
+
 }
 
 

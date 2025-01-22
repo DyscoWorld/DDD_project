@@ -9,19 +9,6 @@ public class LearnWord(IUserRepository userRepository) : IDomainEvent<LearnWordD
 {
     public async Task<bool> Handle(LearnWordDto dto)
     {
-        var user = await userRepository.GetByTelegramIdAsync(dto.TelegramId);
-        if (user == null) return false;
-
-        var word = user.PersonalWords.FirstOrDefault(w => w.Name == dto.WordName);
-        if (word == null) return false;
-
-        if (word.Rank >= dto.MaxRank)
-        {
-            word.IsLearned = true;
-            await userRepository.UpdateAsync(user);
-            return true;
-        }
-
-        return false;
+        return await userRepository.LearnWordAsync(dto.TelegramId, dto.WordName, dto.MaxRank);
     }
 }
