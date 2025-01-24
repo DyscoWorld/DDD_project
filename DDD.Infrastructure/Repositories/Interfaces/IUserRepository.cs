@@ -7,19 +7,12 @@ namespace DDD.Infrastructure.Repositories.Interfaces;
 /// </summary>
 public interface IUserRepository
 {
-    /// <summary>
-    /// Получить пользователя по TelegramId.
-    /// </summary>
     Task<User> GetByTelegramIdAsync(string telegramId);
 
-    /// <summary>
-    /// Добавить нового пользователя в базу данных.
-    /// </summary>
+    Task CreateUser(string telegramId);
+
     Task AddAsync(User user);
 
-    /// <summary>
-    /// Обновить данные пользователя в базе данных.
-    /// </summary>
     Task UpdateAsync(User user);
 
     Task AddPersonalWord(string telegramId, Word word);

@@ -1,14 +1,16 @@
 ﻿using DDD.Domain.DomainEvents;
-using DDD.Domain.Services;
 using DDD.Infrastructure;
 using DDD.Infrastructure.Repositories;
 using DDD.Infrastructure.Repositories.Interfaces;
 using DDD.Presentation.Handlers;
 using DDD.Presentation.TelegramBotIntegration;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
 using MongoDB.Driver;
+
 using SchedulerService;
 
 namespace DDD.Presentation
@@ -40,15 +42,13 @@ namespace DDD.Presentation
                     // Репозитории
                     services.AddScoped<IUserRepository, UserRepository>();
 
-                    // Сервисы
-                    services.AddScoped<UserWordService>();
-                    services.AddScoped<IBotCommandService, BotCommandService>();
-
                     // Telegram Bot
                     services.AddSingleton<GetTelegramBotClientService>();
+                    services.AddSingleton<BotInitializer>();
+
+                    services.AddScoped<CommandHandler>();
                     services.AddScoped<UpdateHandler>();
                     services.AddSingleton<TrainingHandler>();
-                    services.AddSingleton<BotInitializer>();
                     
                     services.AddHostedService<Worker>();
 
@@ -57,6 +57,7 @@ namespace DDD.Presentation
                     services.AddTransient<ListWordsEvent>();
                     services.AddTransient<LearnWordEvent>();
                     services.AddTransient<ChangeSettingsEvent>();
+                    services.AddTransient<CreateUserEvent>();
                 })
                 .Build();
             
