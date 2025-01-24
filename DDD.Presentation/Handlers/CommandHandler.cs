@@ -13,7 +13,8 @@ public class CommandHandler(
     CreateUserEvent createUserEvent,
     AddSingleWordEvent addSingleWordEvent,
     ChangeSettingsEvent changeSettingsEvent,
-    ListWordsEvent listWordsEvent
+    ListWordsEvent listWordsEvent/*,
+    TrainingHandler trainingEvent*/
 )
 {
     private ITelegramBotClient TelegramBotClient = null!;
@@ -39,11 +40,19 @@ public class CommandHandler(
             case "/list_words":
                 await HandleListWordsCommand(command.ChatId);
                 break;
+            /*case "/train":
+                await HandleTrainingCommand(command.ChatId);
+                break;*/
             default:
                 await HandleUnkownCommand(command.ChatId);
                 break;
         }
     }
+
+    /*public async Task HandleTrainingCommand(string telegramId)
+    {
+        await trainingEvent.TrainUser(telegramId);
+    }*/
 
     public async Task HandleNotCommand(string message, string chatId, CancellationToken cancellationToken)
     {

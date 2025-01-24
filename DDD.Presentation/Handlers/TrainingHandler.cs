@@ -1,20 +1,24 @@
-﻿using DDD.Infrastructure.Repositories.Interfaces;
+﻿using DDD.Domain.DomainEvents;
+using DDD.Infrastructure.Repositories.Interfaces;
 using DDD.Models.Dtos;
 using DDD.Presentation.TelegramBotIntegration;
-
-using Microsoft.Extensions.Logging;
 
 using Telegram.Bot;
 
 namespace DDD.Presentation.Handlers;
 
-public class TrainingHandler(ILogger<TrainingHandler> logger, IUserRepository userRepository, GetTelegramBotClientService getTelegramBotClientService)
+public class TrainingHandler(
+    IUserRepository userRepository, 
+    GetTelegramBotClientService getTelegramBotClientService,
+    GetTrainingWordsEvent trainingEvent)
 {
     private Dictionary<string, UserOnTrainingDto> TraininingUsersByTelegramIds { get; set; } = [];
     private ITelegramBotClient TelegramBotClient { get; set; } = null!;
 
-    public async Task TrainUser(GetTrainingWordsResponseDto dto)
+    public async Task TrainUser(string telegramId)
     {
+        var dto = await trainingEvent.Handle(new(telegramId));
+        
         TelegramBotClient = getTelegramBotClientService.TelegramBotClient;
 
         await TelegramBotClient.SendMessage(

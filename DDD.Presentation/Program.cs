@@ -4,14 +4,12 @@ using DDD.Infrastructure.Repositories;
 using DDD.Infrastructure.Repositories.Interfaces;
 using DDD.Presentation.Handlers;
 using DDD.Presentation.TelegramBotIntegration;
-
+using DDD.Presentation.Workers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
-
-using SchedulerService;
 
 namespace DDD.Presentation
 {
