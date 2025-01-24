@@ -52,11 +52,11 @@ namespace DDD.Presentation
                     
                     services.AddHostedService<Worker>();
 
-                    services.AddTransient<AddSingleWord>();
-                    services.AddTransient<TrainingEvent>();
-                    services.AddTransient<ListWords>();
-                    services.AddTransient<LearnWord>();
-                    services.AddTransient<Settings>();
+                    services.AddTransient<AddSingleWordEvent>();
+                    services.AddTransient<GetTrainingWordsEvent>();
+                    services.AddTransient<ListWordsEvent>();
+                    services.AddTransient<LearnWordEvent>();
+                    services.AddTransient<ChangeSettingsEvent>();
                 })
                 .Build();
             

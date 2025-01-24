@@ -6,7 +6,7 @@ using DDD.Models.Models;
 namespace DDD.Domain.DomainEvents;
 
 // Добавление слова
-public class AddSingleWord(IUserRepository userRepository) : IDomainEvent<AddSingleWordDto, int>
+public class AddSingleWordEvent(IUserRepository userRepository) : IDomainEvent<AddSingleWordDto, int>
 {
     public async Task<int> Handle(AddSingleWordDto dto)
     {

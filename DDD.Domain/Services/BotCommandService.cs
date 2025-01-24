@@ -9,9 +9,9 @@ namespace DDD.Domain.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly ILogger<BotCommandService> _logger;
-        private readonly AddSingleWord _addSingleWord;
+        private readonly AddSingleWordEvent _addSingleWord;
 
-        public BotCommandService(IUserRepository userRepository, ILogger<BotCommandService> logger, AddSingleWord addSingleWord)
+        public BotCommandService(IUserRepository userRepository, ILogger<BotCommandService> logger, AddSingleWordEvent addSingleWord)
         {
             _userRepository = userRepository;
             _logger = logger;   

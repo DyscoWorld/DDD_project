@@ -5,7 +5,7 @@ using DDD.Models.Models;
 namespace DDD.Domain.DomainEvents;
 
 // Вывод списка слов пользователя
-public record ListWords(IUserRepository UserRepository)
+public record ListWordsEvent(IUserRepository UserRepository)
     : IDomainEvent<ListWordsDto, List<Word>>
 {
     public async Task<List<Word>> Handle(ListWordsDto dto)

@@ -5,7 +5,7 @@ using DDD.Models.Models;
 
 namespace DDD.Domain.DomainEvents;
 
-public class TrainingEvent(IUserRepository userRepository) : IDomainEvent<GetTrainingWordsRequestDto, GetTrainingWordsResponseDto>
+public class GetTrainingWordsEvent(IUserRepository userRepository) : IDomainEvent<GetTrainingWordsRequestDto, GetTrainingWordsResponseDto>
 {
     public async Task<GetTrainingWordsResponseDto> Handle(GetTrainingWordsRequestDto dto)
     {

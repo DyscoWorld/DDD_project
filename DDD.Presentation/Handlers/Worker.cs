@@ -11,7 +11,7 @@ using Telegram.Bot;
 
 namespace SchedulerService;
 
-public class Worker(ILogger<Worker> logger, IUserRepository userRepository, TrainingEvent trainingEvent, TrainingHandler trainingHandler) : BackgroundService
+public class Worker(ILogger<Worker> logger, IUserRepository userRepository, GetTrainingWordsEvent trainingEvent, TrainingHandler trainingHandler) : BackgroundService
 {
     private AllUserSettingsDto AllUserSettings { get; set; }
 

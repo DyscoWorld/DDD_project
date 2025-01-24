@@ -5,7 +5,7 @@ using DDD.Models.Models;
 namespace DDD.Domain.DomainEvents;
 
 // Настройка параметров пользователя
-public class Settings(IUserRepository userRepository) : IDomainEvent<SettingsDto, bool>
+public class ChangeSettingsEvent(IUserRepository userRepository) : IDomainEvent<SettingsDto, bool>
 {
     public async Task<bool> Handle(SettingsDto dto)
     {

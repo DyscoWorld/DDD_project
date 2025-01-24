@@ -5,7 +5,7 @@ using DDD.Models.Models;
 namespace DDD.Domain.DomainEvents;
 
 // Изучение слова
-public class LearnWord(IUserRepository userRepository) : IDomainEvent<LearnWordDto, bool>
+public class LearnWordEvent(IUserRepository userRepository) : IDomainEvent<LearnWordDto, bool>
 {
     public async Task<bool> Handle(LearnWordDto dto)
     {
