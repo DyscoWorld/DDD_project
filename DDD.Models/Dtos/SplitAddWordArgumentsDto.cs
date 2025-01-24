@@ -5,4 +5,4 @@ public record SplitAddWordArgumentsDto(
     string Word,
     string Translation,
     string Description
-);
+) : BaseDto;

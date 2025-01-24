@@ -27,7 +27,7 @@ public class Worker(ILogger<Worker> logger, IUserRepository userRepository, GetT
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var currentTime = DateTime.Now;
+            var currentTime = DateTime.UtcNow;
 
             foreach (var settings in AllUserSettings.IdAndSettingsDtos)
             {
