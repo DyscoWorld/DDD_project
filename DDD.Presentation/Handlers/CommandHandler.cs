@@ -12,7 +12,8 @@ public class CommandHandler(
     TrainingHandler trainingHandler,
     CreateUserEvent createUserEvent,
     AddSingleWordEvent addSingleWordEvent,
-    ChangeSettingsEvent changeSettingsEvent
+    ChangeSettingsEvent changeSettingsEvent,
+    ListWordsEvent listWordsEvent
 )
 {
     private ITelegramBotClient TelegramBotClient = null!;
@@ -34,6 +35,9 @@ public class CommandHandler(
                 break;
             case "/change_settings":
                 await HandleSettingsCommand(command.Arguments, command.ChatId);
+                break;
+            case "/list_words":
+                await HandleListWordsCommand(command.ChatId);
                 break;
             default:
                 await HandleUnkownCommand(command.ChatId);
@@ -82,6 +86,18 @@ public class CommandHandler(
         await SendMessageToUser(chatId, "Настройки успешно изменены");
     }
 
+    public async Task HandleListWordsCommand(string chatId)
+    {
+        var allWords = await listWordsEvent.Handle(new(chatId));
+        if (allWords.Words.Count == 0)
+            await SendMessageToUser(chatId, "У вас пока что нет добавленных слов. Посмотрите команду /help");
+
+        var formattedWords = allWords.Words.Select(word => $"{word.Name} - {word.Translation} - {word.Definition}").ToList();
+        var messageOfWords = "Ваши слова:\n" + string.Join('\n', formattedWords);
+
+        await SendMessageToUser(chatId, messageOfWords);
+    }
+
     public async Task HandleStartCommand(string chatId)
     {
         var isUserCreated = await createUserEvent.Handle(new(chatId));
@@ -96,10 +112,11 @@ public class CommandHandler(
     {
         var message = """
             Вот список доступных команд: 
-            /start - Запуск бота
-            /help - Помощь
+            /start - Запуск бота.
+            /help - Помощь.
             /add_word <английское слово или словосочетание>:<перевод>:<описание> - Добавить личное слово. Обязательно разделяйте двоеточием все аргументы в команде.
             /change_settings <время тренировки>:<количество слов за тренировку> - Поменять настройки. Обязательно разделяйте двоеточием все аргументы в команде.
+            /list_words - Вывести все добавленные слова.
         """;
 
         await SendMessageToUser(chatId, message);
