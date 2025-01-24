@@ -1,4 +1,5 @@
 ﻿using DDD.Domain.DomainEvents;
+using DDD.Infrastructure.Helpers;
 using DDD.Models.Dtos;
 using DDD.Presentation.TelegramBotIntegration;
 
@@ -10,7 +11,8 @@ public class CommandHandler(
     GetTelegramBotClientService getTelegramBotClientService,
     TrainingHandler trainingHandler,
     CreateUserEvent createUserEvent,
-    AddSingleWordEvent addSingleWordEvent
+    AddSingleWordEvent addSingleWordEvent,
+    ChangeSettingsEvent changeSettingsEvent
 )
 {
     private ITelegramBotClient TelegramBotClient = null!;
@@ -21,7 +23,7 @@ public class CommandHandler(
 
         switch (command.Command)
         {
-            case "/addword":
+            case "/add_word":
                 await HandleAddWordCommand(command.Arguments, command.ChatId);
                 break;
             case "/start":
@@ -29,6 +31,9 @@ public class CommandHandler(
                 break;
             case "/help":
                 await HandleHelpCommand(command.ChatId);
+                break;
+            case "/change_settings":
+                await HandleSettingsCommand(command.Arguments, command.ChatId);
                 break;
             default:
                 await HandleUnkownCommand(command.ChatId);
@@ -64,6 +69,19 @@ public class CommandHandler(
         await SendMessageToUser(chatId, "Слово успешно добавлено");
     }
 
+    public async Task HandleSettingsCommand(string? arguments, string chatId)
+    {
+        var argumentsDto = ValidateAndSplitSettingsArguments(arguments);
+        if (!argumentsDto.IsValid)
+        {
+            await SendMessageToUser(chatId, "Невалидный синтаксис команды. Посмотрите в справке бота по команде /help");
+            return;
+        }
+
+        await changeSettingsEvent.Handle(new(chatId, argumentsDto.TimeToSpendMessages!.Value, argumentsDto.WordAmount!.Value));
+        await SendMessageToUser(chatId, "Настройки успешно изменены");
+    }
+
     public async Task HandleStartCommand(string chatId)
     {
         var isUserCreated = await createUserEvent.Handle(new(chatId));
@@ -80,8 +98,8 @@ public class CommandHandler(
             Вот список доступных команд: 
             /start - Запуск бота
             /help - Помощь
-            /addword 
-            <английское слово или словосочетание>:<перевод>:<описание> - Добавить личное слово. Обязательно разделяйте двоеточием все аргументы в команде.
+            /add_word <английское слово или словосочетание>:<перевод>:<описание> - Добавить личное слово. Обязательно разделяйте двоеточием все аргументы в команде.
+            /change_settings <время тренировки>:<количество слов за тренировку> - Поменять настройки. Обязательно разделяйте двоеточием все аргументы в команде.
         """;
 
         await SendMessageToUser(chatId, message);
@@ -108,5 +126,25 @@ public class CommandHandler(
         return splittedParts.Length != 3
             ? new SplitAddWordArgumentsDto(false, null!, null!, null!)
             : new SplitAddWordArgumentsDto(true, splittedParts[0], splittedParts[1], splittedParts[2]);
+    }
+
+    private static SplitSettingsArgumentsDto ValidateAndSplitSettingsArguments(string? arguments)
+    {
+        var notValidDto = new SplitSettingsArgumentsDto(false, null!, null!);
+
+        if (arguments is null)
+            return notValidDto;
+
+        var indexOfSplitColon = arguments.LastIndexOf(':');
+        if (indexOfSplitColon == -1)
+            return notValidDto;
+
+        var stringedTime = arguments[..indexOfSplitColon];
+        var stringedWordsAmount = arguments[(indexOfSplitColon + 1)..];
+
+        if (!TimeOnly.TryParse(stringedTime, out var spendMessageTimeOnly) || !int.TryParse(stringedWordsAmount, out var wordsAmount))
+            return notValidDto;
+
+        return new SplitSettingsArgumentsDto(true, spendMessageTimeOnly.ToUtc(), wordsAmount);
     }
 }
