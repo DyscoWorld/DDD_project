@@ -2,8 +2,6 @@
 using DDD.Models.Dtos;
 using DDD.Presentation.TelegramBotIntegration;
 
-using DnsClient.Internal;
-
 using Microsoft.Extensions.Logging;
 
 using Telegram.Bot;
