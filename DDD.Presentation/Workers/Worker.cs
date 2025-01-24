@@ -1,5 +1,4 @@
 using DDD.Domain.DomainEvents;
-using DDD.Infrastructure.Repositories;
 using DDD.Infrastructure.Repositories.Interfaces;
 using DDD.Models.Dtos;
 using DDD.Presentation.Handlers;
@@ -7,9 +6,8 @@ using DDD.Presentation.Handlers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-using Telegram.Bot;
-
 namespace SchedulerService;
+
 
 public class Worker(ILogger<Worker> logger, IUserRepository userRepository, GetTrainingWordsEvent trainingEvent, TrainingHandler trainingHandler) : BackgroundService
 {

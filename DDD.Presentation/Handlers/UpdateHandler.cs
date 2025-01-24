@@ -3,25 +3,15 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using DDD.Infrastructure.Repositories.Interfaces;
 using Microsoft.Extensions.Logging;
+using DDD.Models.Dtos;
 
 namespace DDD.Presentation.Handlers;
 
 /// <summary>
 /// Класс handler для сообщений
 /// </summary>
-public class UpdateHandler
+public class UpdateHandler(CommandHandler commandHandler, ILogger<UpdateHandler> logger)
 {
-    private readonly IBotCommandService _botCommandService;
-    private readonly ILogger<UpdateHandler> _logger;
-    private readonly TrainingHandler _trainingHandler;
-
-    public UpdateHandler(IBotCommandService botCommandService, ILogger<UpdateHandler> logger, TrainingHandler trainingHandler)
-    {
-        _botCommandService = botCommandService;
-        _logger = logger;
-        _trainingHandler = trainingHandler;
-    }
-
     /// <summary>
     /// Обработка входящих сообщений
     /// </summary>
@@ -29,58 +19,44 @@ public class UpdateHandler
     {
         if (update.Type == UpdateType.Message && update.Message is not null)
         {
-            var message = update.Message;
-            var chatId = message.Chat.Id.ToString();
-            var text = message.Text?.ToLower();
+            var messageObject = update.Message;
+            var chatId = messageObject.Chat.Id.ToString();
+            var textOfMessage = messageObject.Text?.ToLower();
 
-            _logger.LogInformation($"Получено сообщение от {chatId}: {text}");
+            if (textOfMessage is null)
+                return;
 
-            if (IsCommand(text))
-            {
-                string response;
+            logger.LogInformation("Получено сообщение от {ChatId}: {Text}", chatId, textOfMessage);
 
-                if (text != null && text.StartsWith("/addword"))
-                {
-                    response = await _botCommandService.HandleAddWordCommandAsync(chatId, text);
-                }
-                else
-                {
-                    response = text switch
-                    {
-                        "/start" => await _botCommandService.HandleStartCommandAsync(chatId),
-                        "/help" => await _botCommandService.HandleHelpCommandAsync(),
-                        _ => await _botCommandService.HandleUnknownCommandAsync()
-                    };
-                }
-
-                await botClient.SendMessage(
-                    chatId: message.Chat.Id,
-                    text: response,
-                    cancellationToken: cancellationToken
-                );
-            }
+            if (IsCommand(textOfMessage))
+                await commandHandler.HandleAnyCommand(MapToCommandDto(textOfMessage, chatId), cancellationToken);
             else
-            {
-                if (_trainingHandler.IsUserOnTraining(telegramId: chatId))
-                    _trainingHandler.ContunueTraining(chatId, text);
-                else
-                    await botClient.SendMessage(
-                    chatId: message.Chat.Id,
-                    text: "Вы не на тренировке, введите команду",
-                    cancellationToken: cancellationToken
-                );
-            }
+                await commandHandler.HandleNotCommand(textOfMessage, chatId, cancellationToken);
         }
     }
-
-    private static bool IsCommand(string message) => message is not null && message.StartsWith('/');
 
     /// <summary>
     /// Обработка ошибок
     /// </summary>
     public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
-        _logger.LogError(exception, "Произошла ошибка");
+        logger.LogError(exception, "Произошла ошибка");
         return Task.CompletedTask;
+    }
+
+    private static bool IsCommand(string? message)
+    {
+        return message is not null && message.StartsWith('/') && message.Length > 1;
+    }
+
+    private static CommandDto MapToCommandDto(string message, string chatId)
+    {
+        if (message.Split(' ').Length == 1)
+            return new CommandDto(message, null, chatId);
+
+        var command = message[..message.IndexOf(' ')];
+        var arguments = message[(message.IndexOf(' ') + 1)..];
+
+        return new CommandDto(command, arguments, chatId);
     }
 }

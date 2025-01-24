@@ -99,6 +99,19 @@ public class UserRepository : IUserRepository
         await UpdateAsync(user);
         return true;
     }
+
+    public async Task CreateUser(string telegramId)
+    {
+        var user = new User()
+        {
+            LastActivity = DateTime.UtcNow,
+            TelegramId = telegramId,
+            PersonalWords = [],
+            Settings = new Settings()
+        };
+
+        await _users.InsertOneAsync(user);
+    }
 }
 
 

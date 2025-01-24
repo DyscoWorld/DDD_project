@@ -1,5 +1,4 @@
-﻿using DDD.Infrastructure.Repositories;
-using DDD.Infrastructure.Repositories.Interfaces;
+﻿using DDD.Infrastructure.Repositories.Interfaces;
 using DDD.Models.Dtos;
 using DDD.Models.Models;
 
