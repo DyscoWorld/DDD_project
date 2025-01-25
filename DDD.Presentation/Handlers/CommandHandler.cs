@@ -1,25 +1,28 @@
 ﻿using DDD.Domain.DomainEvents;
 using DDD.Infrastructure.Helpers;
+using DDD.Infrastructure.Repositories.Interfaces;
 using DDD.Models.Dtos;
+using DDD.Models.Enums;
+using DDD.Models.Models;
 using DDD.Presentation.TelegramBotIntegration;
-
+using DDD.Presentation.Workers;
 using Telegram.Bot;
 
 namespace DDD.Presentation.Handlers;
 
 public class CommandHandler(
+    IValidateArgumentsService validateArgumentsService,
     GetTelegramBotClientService getTelegramBotClientService,
     TrainingHandler trainingHandler,
     CreateUserEvent createUserEvent,
     AddSingleWordEvent addSingleWordEvent,
     ChangeSettingsEvent changeSettingsEvent,
-    ListWordsEvent listWordsEvent/*,
-    TrainingHandler trainingEvent*/
+    ListWordsEvent listWordsEvent
 )
 {
     private ITelegramBotClient TelegramBotClient = null!;
 
-    public async Task HandleAnyCommand(CommandDto command, CancellationToken cancellationToken)
+    public async Task HandleAnyCommand(CommandModel command, CancellationToken cancellationToken)
     {
         TelegramBotClient ??= getTelegramBotClientService.TelegramBotClient;
 
@@ -40,33 +43,37 @@ public class CommandHandler(
             case "/list_words":
                 await HandleListWordsCommand(command.ChatId);
                 break;
-            /*case "/train":
+            case "/training":
                 await HandleTrainingCommand(command.ChatId);
-                break;*/
+                break;
             default:
                 await HandleUnkownCommand(command.ChatId);
                 break;
         }
     }
 
-    /*public async Task HandleTrainingCommand(string telegramId)
+    public async Task HandleTrainingCommand(string telegramId)
     {
-        await trainingEvent.TrainUser(telegramId);
-    }*/
+        await trainingHandler.TrainUser(telegramId);
+    }
 
     public async Task HandleNotCommand(string message, string chatId, CancellationToken cancellationToken)
     {
         TelegramBotClient ??= getTelegramBotClientService.TelegramBotClient;
 
-        if (trainingHandler.IsUserOnTraining(telegramId: chatId))
-            trainingHandler.ContunueTraining(chatId, message);
+        if (trainingHandler.IsUserOnTraining(chatId))
+        {
+            await trainingHandler.UpdateTraining(chatId, message, TrainingStatus.EnteredWord);
+        }
         else
-            await SendMessageToUser(chatId, "Вы не на тренировке, введите команду");
+        {
+            await TelegramBotClient.SendMessage(chatId, "Вы не на тренировке. Введите команду, чтобы начать тренировку.");
+        }
     }
 
     public async Task HandleAddWordCommand(string? arguments, string chatId)
     {
-        var splittedArguments = ValidateAndSplitAddWordArguments(arguments);
+        var splittedArguments = validateArgumentsService.ValidateAndSplitAddWordArguments(arguments);
         if (!splittedArguments.IsValid)
         {
             await SendMessageToUser(chatId, "Невалидный синтаксис команды. Посмотрите в справке бота по команде /help");
@@ -84,7 +91,7 @@ public class CommandHandler(
 
     public async Task HandleSettingsCommand(string? arguments, string chatId)
     {
-        var argumentsDto = ValidateAndSplitSettingsArguments(arguments);
+        var argumentsDto = validateArgumentsService.ValidateAndSplitSettingsArguments(arguments);
         if (!argumentsDto.IsValid)
         {
             await SendMessageToUser(chatId, "Невалидный синтаксис команды. Посмотрите в справке бота по команде /help");
@@ -126,6 +133,7 @@ public class CommandHandler(
             /add_word <английское слово или словосочетание>:<перевод>:<описание> - Добавить личное слово. Обязательно разделяйте двоеточием все аргументы в команде.
             /change_settings <время тренировки>:<количество слов за тренировку> - Поменять настройки. Обязательно разделяйте двоеточием все аргументы в команде.
             /list_words - Вывести все добавленные слова.
+            /training - запустить тренировку сейчас.
         """;
 
         await SendMessageToUser(chatId, message);
@@ -140,37 +148,5 @@ public class CommandHandler(
     private async Task SendMessageToUser(string chatId, string message)
     {
         await TelegramBotClient.SendMessage(chatId: chatId, text: message, cancellationToken: default);
-    }
-
-    private static SplitAddWordArgumentsDto ValidateAndSplitAddWordArguments(string? arguments)
-    {
-        if (arguments is null)
-            return new SplitAddWordArgumentsDto(false, null!, null!, null!);
-
-        var splittedParts = arguments.Split(':');
-
-        return splittedParts.Length != 3
-            ? new SplitAddWordArgumentsDto(false, null!, null!, null!)
-            : new SplitAddWordArgumentsDto(true, splittedParts[0], splittedParts[1], splittedParts[2]);
-    }
-
-    private static SplitSettingsArgumentsDto ValidateAndSplitSettingsArguments(string? arguments)
-    {
-        var notValidDto = new SplitSettingsArgumentsDto(false, null!, null!);
-
-        if (arguments is null)
-            return notValidDto;
-
-        var indexOfSplitColon = arguments.LastIndexOf(':');
-        if (indexOfSplitColon == -1)
-            return notValidDto;
-
-        var stringedTime = arguments[..indexOfSplitColon];
-        var stringedWordsAmount = arguments[(indexOfSplitColon + 1)..];
-
-        if (!TimeOnly.TryParse(stringedTime, out var spendMessageTimeOnly) || !int.TryParse(stringedWordsAmount, out var wordsAmount))
-            return notValidDto;
-
-        return new SplitSettingsArgumentsDto(true, spendMessageTimeOnly.ToUtc(), wordsAmount);
     }
 }

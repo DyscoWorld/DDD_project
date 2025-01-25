@@ -4,6 +4,7 @@ using Telegram.Bot.Types.Enums;
 using DDD.Infrastructure.Repositories.Interfaces;
 using Microsoft.Extensions.Logging;
 using DDD.Models.Dtos;
+using DDD.Models.Models;
 
 namespace DDD.Presentation.Handlers;
 
@@ -44,19 +45,16 @@ public class UpdateHandler(CommandHandler commandHandler, ILogger<UpdateHandler>
         return Task.CompletedTask;
     }
 
-    private static bool IsCommand(string? message)
-    {
-        return message is not null && message.StartsWith('/') && message.Length > 1;
-    }
+    private static bool IsCommand(string? message) => message is not null && message.StartsWith('/') && message.Length > 1;
 
-    private static CommandDto MapToCommandDto(string message, string chatId)
+    private static CommandModel MapToCommandDto(string message, string chatId)
     {
         if (message.Split(' ').Length == 1)
-            return new CommandDto(message, null, chatId);
+            return new CommandModel(message, null, chatId);
 
         var command = message[..message.IndexOf(' ')];
         var arguments = message[(message.IndexOf(' ') + 1)..];
 
-        return new CommandDto(command, arguments, chatId);
+        return new CommandModel(command, arguments, chatId);
     }
 }

@@ -32,7 +32,7 @@ public class Worker(
 
                     if (timeToTrain.Hour == currentTime.Hour && timeToTrain.Minute == currentTime.Minute)
                     {
-                        await trainingHandler.TrainUser(settings.TelegramId);
+                        await StartTrainingAsync(settings.TelegramId);
                         var userSettings = AllUserSettings.IdAndSettings.FirstOrDefault(x => x.TelegramId == settings.TelegramId);
                         userSettings.TrainedToday = true;
                         
@@ -44,6 +44,11 @@ public class Worker(
             
             await Task.Delay(10000, stoppingToken);
         }
+    }
+
+    public async Task StartTrainingAsync(string telegramId)
+    {
+        await trainingHandler.TrainUser(telegramId);
     }
     
     private async Task UpdateUserSettingsAsync()

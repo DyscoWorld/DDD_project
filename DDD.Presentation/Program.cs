@@ -1,4 +1,6 @@
-﻿using DDD.Domain.DomainEvents;
+﻿using DDD.Domain;
+using DDD.Domain.DomainEvents;
+using DDD.Domain.Services;
 using DDD.Infrastructure;
 using DDD.Infrastructure.Repositories;
 using DDD.Infrastructure.Repositories.Interfaces;
@@ -15,47 +17,27 @@ namespace DDD.Presentation
 {
     class Program
     {
+        private const string DbConnectionString = "mongodb://admin:password@localhost:27017";
+        private const string DbName = "EnglishDB";
+        
         static async Task Main(string[] args)
         {
             var host = Host.CreateDefaultBuilder(args)
                 .ConfigureServices((context, services) =>
                 {
-                    // Логирование
                     services.AddLogging(builder =>
                     {
                         builder.AddConsole();
                         builder.SetMinimumLevel(LogLevel.Information);
                     });
-
-                    // Бд
-                    services.AddSingleton<IMongoClient>(_ =>
-                        new MongoClient("mongodb://admin:password@localhost:27017"));
-                    services.AddSingleton<IMongoDatabase>(sp =>
-                    {
-                        var client = sp.GetRequiredService<IMongoClient>();
-                        return client.GetDatabase("EnglishDB");
-                    });
-                    services.AddSingleton<AppDbContext>();
-
-                    // Репозитории
-                    services.AddScoped<IUserRepository, UserRepository>();
-
-                    // Telegram Bot
-                    services.AddSingleton<GetTelegramBotClientService>();
-                    services.AddSingleton<BotInitializer>();
-
-                    services.AddScoped<CommandHandler>();
-                    services.AddScoped<UpdateHandler>();
-                    services.AddSingleton<TrainingHandler>();
                     
-                    services.AddHostedService<Worker>();
-
-                    services.AddTransient<AddSingleWordEvent>();
-                    services.AddTransient<GetTrainingWordsEvent>();
-                    services.AddTransient<ListWordsEvent>();
-                    services.AddTransient<LearnWordEvent>();
-                    services.AddTransient<ChangeSettingsEvent>();
-                    services.AddTransient<CreateUserEvent>();
+                    services.AddMongoDatabase(DbConnectionString, DbName);
+                    
+                    services.AddRepositories();
+                    
+                    services.AddPresentationServices();
+                    
+                    services.AddDomainServices();
                 })
                 .Build();
             

@@ -1,6 +1,6 @@
 ﻿namespace DDD.Models.Enums;
 
-public enum TrainingStatusEnum
+public enum TrainingStatus
 {
     NotTraining = 0,
     Training = 1,
